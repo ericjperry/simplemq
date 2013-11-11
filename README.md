@@ -8,3 +8,6 @@ Also, if anyone wishes to add a binding in a new language, go ahead and make a p
 
 I will update the documentation in the project in the form of Javadocs and I'll put some updates on this README
 as well.
+
+I will also serve up an installation package of some sort from my website soon so the server can be downloaded and run
+easily.
