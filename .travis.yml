@@ -1,2 +1,2 @@
 language: java
-install: mvn test
+install: mvn install
