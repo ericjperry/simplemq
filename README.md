@@ -1,4 +1,5 @@
 Simple Message Queue
+====================
 
 This project was built mostly as a learning exercise, but it may be useful as a development tool. The Simple Message
 Queue is exactly what it sounds like, a pretty simplistic message queue built on top of Thrift services.
