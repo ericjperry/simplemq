@@ -50,4 +50,13 @@ public class SimpleMessageQueue {
 
         return result;
     }
+
+    public synchronized void resetTopic(String consumerId, String topic) {
+        if (consumerToTopics.containsKey(consumerId)) {
+            Map<String, Integer> topicToIndex = consumerToTopics.get(consumerId);
+            if (topicToIndex.containsKey(topic)) {
+                topicToIndex.remove(topic);
+            }
+        }
+    }
 }

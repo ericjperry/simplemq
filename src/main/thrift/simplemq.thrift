@@ -11,5 +11,6 @@ struct SimpleMQPollResult {
 
 service SimpleMQ {
     void send(1: SimpleMQMessage message),
+    void unsubscribeFromTopic(1: string consumerId, 2: string topic),
     SimpleMQPollResult poll(1: string consumerId, 2: string topic, 3: i32 timeout);
 }

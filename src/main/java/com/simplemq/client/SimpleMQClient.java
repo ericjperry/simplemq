@@ -55,6 +55,14 @@ public class SimpleMQClient implements Closeable {
         return result;
     }
 
+    public void unsubscribeFromTopic(String consumerId, String topic) {
+        try {
+            client.unsubscribeFromTopic(consumerId, topic);
+        } catch (TException e) {
+            log.error("Could not unsubscribe from topic", e);
+        }
+    }
+
     @Override
     public void close() throws IOException {
         transport.close();

@@ -26,6 +26,8 @@ public class SimpleMQ {
 
     public void send(SimpleMQMessage message) throws org.apache.thrift.TException;
 
+    public void unsubscribeFromTopic(String consumerId, String topic) throws org.apache.thrift.TException;
+
     public SimpleMQPollResult poll(String consumerId, String topic, int timeout) throws org.apache.thrift.TException;
 
   }
@@ -33,6 +35,8 @@ public class SimpleMQ {
   public interface AsyncIface {
 
     public void send(SimpleMQMessage message, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.send_call> resultHandler) throws org.apache.thrift.TException;
+
+    public void unsubscribeFromTopic(String consumerId, String topic, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.unsubscribeFromTopic_call> resultHandler) throws org.apache.thrift.TException;
 
     public void poll(String consumerId, String topic, int timeout, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.poll_call> resultHandler) throws org.apache.thrift.TException;
 
@@ -103,6 +107,40 @@ public class SimpleMQ {
         throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "send failed: out of sequence response");
       }
       send_result result = new send_result();
+      result.read(iprot_);
+      iprot_.readMessageEnd();
+      return;
+    }
+
+    public void unsubscribeFromTopic(String consumerId, String topic) throws org.apache.thrift.TException
+    {
+      send_unsubscribeFromTopic(consumerId, topic);
+      recv_unsubscribeFromTopic();
+    }
+
+    public void send_unsubscribeFromTopic(String consumerId, String topic) throws org.apache.thrift.TException
+    {
+      oprot_.writeMessageBegin(new org.apache.thrift.protocol.TMessage("unsubscribeFromTopic", org.apache.thrift.protocol.TMessageType.CALL, ++seqid_));
+      unsubscribeFromTopic_args args = new unsubscribeFromTopic_args();
+      args.setConsumerId(consumerId);
+      args.setTopic(topic);
+      args.write(oprot_);
+      oprot_.writeMessageEnd();
+      oprot_.getTransport().flush();
+    }
+
+    public void recv_unsubscribeFromTopic() throws org.apache.thrift.TException
+    {
+      org.apache.thrift.protocol.TMessage msg = iprot_.readMessageBegin();
+      if (msg.type == org.apache.thrift.protocol.TMessageType.EXCEPTION) {
+        org.apache.thrift.TApplicationException x = org.apache.thrift.TApplicationException.read(iprot_);
+        iprot_.readMessageEnd();
+        throw x;
+      }
+      if (msg.seqid != seqid_) {
+        throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.BAD_SEQUENCE_ID, "unsubscribeFromTopic failed: out of sequence response");
+      }
+      unsubscribeFromTopic_result result = new unsubscribeFromTopic_result();
       result.read(iprot_);
       iprot_.readMessageEnd();
       return;
@@ -196,6 +234,41 @@ public class SimpleMQ {
       }
     }
 
+    public void unsubscribeFromTopic(String consumerId, String topic, org.apache.thrift.async.AsyncMethodCallback<unsubscribeFromTopic_call> resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      unsubscribeFromTopic_call method_call = new unsubscribeFromTopic_call(consumerId, topic, resultHandler, this, protocolFactory, transport);
+      this.currentMethod = method_call;
+      manager.call(method_call);
+    }
+
+    public static class unsubscribeFromTopic_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String consumerId;
+      private String topic;
+      public unsubscribeFromTopic_call(String consumerId, String topic, org.apache.thrift.async.AsyncMethodCallback<unsubscribeFromTopic_call> resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.consumerId = consumerId;
+        this.topic = topic;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("unsubscribeFromTopic", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        unsubscribeFromTopic_args args = new unsubscribeFromTopic_args();
+        args.setConsumerId(consumerId);
+        args.setTopic(topic);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public void getResult() throws org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        (new Client(prot)).recv_unsubscribeFromTopic();
+      }
+    }
+
     public void poll(String consumerId, String topic, int timeout, org.apache.thrift.async.AsyncMethodCallback<poll_call> resultHandler) throws org.apache.thrift.TException {
       checkReady();
       poll_call method_call = new poll_call(consumerId, topic, timeout, resultHandler, this, protocolFactory, transport);
@@ -242,6 +315,7 @@ public class SimpleMQ {
     {
       iface_ = iface;
       processMap_.put("send", new send());
+      processMap_.put("unsubscribeFromTopic", new unsubscribeFromTopic());
       processMap_.put("poll", new poll());
     }
 
@@ -289,6 +363,32 @@ public class SimpleMQ {
         send_result result = new send_result();
         iface_.send(args.message);
         oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("send", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
+        result.write(oprot);
+        oprot.writeMessageEnd();
+        oprot.getTransport().flush();
+      }
+
+    }
+
+    private class unsubscribeFromTopic implements ProcessFunction {
+      public void process(int seqid, org.apache.thrift.protocol.TProtocol iprot, org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException
+      {
+        unsubscribeFromTopic_args args = new unsubscribeFromTopic_args();
+        try {
+          args.read(iprot);
+        } catch (org.apache.thrift.protocol.TProtocolException e) {
+          iprot.readMessageEnd();
+          org.apache.thrift.TApplicationException x = new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.PROTOCOL_ERROR, e.getMessage());
+          oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("unsubscribeFromTopic", org.apache.thrift.protocol.TMessageType.EXCEPTION, seqid));
+          x.write(oprot);
+          oprot.writeMessageEnd();
+          oprot.getTransport().flush();
+          return;
+        }
+        iprot.readMessageEnd();
+        unsubscribeFromTopic_result result = new unsubscribeFromTopic_result();
+        iface_.unsubscribeFromTopic(args.consumerId, args.topic);
+        oprot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("unsubscribeFromTopic", org.apache.thrift.protocol.TMessageType.REPLY, seqid));
         result.write(oprot);
         oprot.writeMessageEnd();
         oprot.getTransport().flush();
@@ -795,6 +895,593 @@ public class SimpleMQ {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder("send_result(");
+      boolean first = true;
+
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class unsubscribeFromTopic_args implements org.apache.thrift.TBase<unsubscribeFromTopic_args, unsubscribeFromTopic_args._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("unsubscribeFromTopic_args");
+
+    private static final org.apache.thrift.protocol.TField CONSUMER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("consumerId", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField TOPIC_FIELD_DESC = new org.apache.thrift.protocol.TField("topic", org.apache.thrift.protocol.TType.STRING, (short)2);
+
+    public String consumerId;
+    public String topic;
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      CONSUMER_ID((short)1, "consumerId"),
+      TOPIC((short)2, "topic");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // CONSUMER_ID
+            return CONSUMER_ID;
+          case 2: // TOPIC
+            return TOPIC;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.CONSUMER_ID, new org.apache.thrift.meta_data.FieldMetaData("consumerId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.TOPIC, new org.apache.thrift.meta_data.FieldMetaData("topic", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(unsubscribeFromTopic_args.class, metaDataMap);
+    }
+
+    public unsubscribeFromTopic_args() {
+    }
+
+    public unsubscribeFromTopic_args(
+      String consumerId,
+      String topic)
+    {
+      this();
+      this.consumerId = consumerId;
+      this.topic = topic;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public unsubscribeFromTopic_args(unsubscribeFromTopic_args other) {
+      if (other.isSetConsumerId()) {
+        this.consumerId = other.consumerId;
+      }
+      if (other.isSetTopic()) {
+        this.topic = other.topic;
+      }
+    }
+
+    public unsubscribeFromTopic_args deepCopy() {
+      return new unsubscribeFromTopic_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.consumerId = null;
+      this.topic = null;
+    }
+
+    public String getConsumerId() {
+      return this.consumerId;
+    }
+
+    public unsubscribeFromTopic_args setConsumerId(String consumerId) {
+      this.consumerId = consumerId;
+      return this;
+    }
+
+    public void unsetConsumerId() {
+      this.consumerId = null;
+    }
+
+    /** Returns true if field consumerId is set (has been assigned a value) and false otherwise */
+    public boolean isSetConsumerId() {
+      return this.consumerId != null;
+    }
+
+    public void setConsumerIdIsSet(boolean value) {
+      if (!value) {
+        this.consumerId = null;
+      }
+    }
+
+    public String getTopic() {
+      return this.topic;
+    }
+
+    public unsubscribeFromTopic_args setTopic(String topic) {
+      this.topic = topic;
+      return this;
+    }
+
+    public void unsetTopic() {
+      this.topic = null;
+    }
+
+    /** Returns true if field topic is set (has been assigned a value) and false otherwise */
+    public boolean isSetTopic() {
+      return this.topic != null;
+    }
+
+    public void setTopicIsSet(boolean value) {
+      if (!value) {
+        this.topic = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case CONSUMER_ID:
+        if (value == null) {
+          unsetConsumerId();
+        } else {
+          setConsumerId((String)value);
+        }
+        break;
+
+      case TOPIC:
+        if (value == null) {
+          unsetTopic();
+        } else {
+          setTopic((String)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case CONSUMER_ID:
+        return getConsumerId();
+
+      case TOPIC:
+        return getTopic();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case CONSUMER_ID:
+        return isSetConsumerId();
+      case TOPIC:
+        return isSetTopic();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof unsubscribeFromTopic_args)
+        return this.equals((unsubscribeFromTopic_args)that);
+      return false;
+    }
+
+    public boolean equals(unsubscribeFromTopic_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_consumerId = true && this.isSetConsumerId();
+      boolean that_present_consumerId = true && that.isSetConsumerId();
+      if (this_present_consumerId || that_present_consumerId) {
+        if (!(this_present_consumerId && that_present_consumerId))
+          return false;
+        if (!this.consumerId.equals(that.consumerId))
+          return false;
+      }
+
+      boolean this_present_topic = true && this.isSetTopic();
+      boolean that_present_topic = true && that.isSetTopic();
+      if (this_present_topic || that_present_topic) {
+        if (!(this_present_topic && that_present_topic))
+          return false;
+        if (!this.topic.equals(that.topic))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(unsubscribeFromTopic_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      unsubscribeFromTopic_args typedOther = (unsubscribeFromTopic_args)other;
+
+      lastComparison = Boolean.valueOf(isSetConsumerId()).compareTo(typedOther.isSetConsumerId());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetConsumerId()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.consumerId, typedOther.consumerId);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetTopic()).compareTo(typedOther.isSetTopic());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetTopic()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.topic, typedOther.topic);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          case 1: // CONSUMER_ID
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.consumerId = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          case 2: // TOPIC
+            if (field.type == org.apache.thrift.protocol.TType.STRING) {
+              this.topic = iprot.readString();
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+            }
+            break;
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      validate();
+
+      oprot.writeStructBegin(STRUCT_DESC);
+      if (this.consumerId != null) {
+        oprot.writeFieldBegin(CONSUMER_ID_FIELD_DESC);
+        oprot.writeString(this.consumerId);
+        oprot.writeFieldEnd();
+      }
+      if (this.topic != null) {
+        oprot.writeFieldBegin(TOPIC_FIELD_DESC);
+        oprot.writeString(this.topic);
+        oprot.writeFieldEnd();
+      }
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("unsubscribeFromTopic_args(");
+      boolean first = true;
+
+      sb.append("consumerId:");
+      if (this.consumerId == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.consumerId);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("topic:");
+      if (this.topic == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.topic);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+  }
+
+  public static class unsubscribeFromTopic_result implements org.apache.thrift.TBase<unsubscribeFromTopic_result, unsubscribeFromTopic_result._Fields>, java.io.Serializable, Cloneable   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("unsubscribeFromTopic_result");
+
+
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+;
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(unsubscribeFromTopic_result.class, metaDataMap);
+    }
+
+    public unsubscribeFromTopic_result() {
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public unsubscribeFromTopic_result(unsubscribeFromTopic_result other) {
+    }
+
+    public unsubscribeFromTopic_result deepCopy() {
+      return new unsubscribeFromTopic_result(this);
+    }
+
+    @Override
+    public void clear() {
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof unsubscribeFromTopic_result)
+        return this.equals((unsubscribeFromTopic_result)that);
+      return false;
+    }
+
+    public boolean equals(unsubscribeFromTopic_result that) {
+      if (that == null)
+        return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return 0;
+    }
+
+    public int compareTo(unsubscribeFromTopic_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+      unsubscribeFromTopic_result typedOther = (unsubscribeFromTopic_result)other;
+
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      org.apache.thrift.protocol.TField field;
+      iprot.readStructBegin();
+      while (true)
+      {
+        field = iprot.readFieldBegin();
+        if (field.type == org.apache.thrift.protocol.TType.STOP) { 
+          break;
+        }
+        switch (field.id) {
+          default:
+            org.apache.thrift.protocol.TProtocolUtil.skip(iprot, field.type);
+        }
+        iprot.readFieldEnd();
+      }
+      iprot.readStructEnd();
+
+      // check for required fields of primitive type, which can't be checked in the validate method
+      validate();
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      oprot.writeStructBegin(STRUCT_DESC);
+
+      oprot.writeFieldStop();
+      oprot.writeStructEnd();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("unsubscribeFromTopic_result(");
       boolean first = true;
 
       sb.append(")");

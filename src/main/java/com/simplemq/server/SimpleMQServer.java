@@ -5,6 +5,7 @@ import com.simplemq.core.SimpleMessageQueue;
 import com.simplemq.thrift.SimpleMQ;
 import com.simplemq.thrift.SimpleMQMessage;
 import com.simplemq.thrift.SimpleMQPollResult;
+import org.apache.thrift.TException;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -22,11 +23,18 @@ public class SimpleMQServer {
             mq = new SimpleMessageQueue();
         }
 
-        public void send(SimpleMQMessage message) {
+        @Override
+        public void send(SimpleMQMessage message) throws TException {
             mq.enqueue(message.getTopic(), message.getData());
         }
 
-        public SimpleMQPollResult poll(String consumerId, String topic, int timeout) {
+        @Override
+        public void unsubscribeFromTopic(String consumerId, String topic) throws TException {
+            mq.resetTopic(consumerId, topic);
+        }
+
+        @Override
+        public SimpleMQPollResult poll(String consumerId, String topic, int timeout) throws TException {
             long endTimeMillis = System.currentTimeMillis() + timeout;
             Optional<byte[]> dequeueResult = Optional.absent();
             SimpleMQPollResult pollResult = new SimpleMQPollResult();
