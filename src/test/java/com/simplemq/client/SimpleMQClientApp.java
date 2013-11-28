@@ -11,7 +11,7 @@ public class SimpleMQClientApp {
         String consumerId = "sample_app";
         Scanner keyboard = new Scanner(System.in);
         String mode = "";
-        SimpleMQClient client = new SimpleMQClient("localhost", 9500, consumerId, timeout);
+        SimpleMQClient client = new SimpleMQClient("localhost", 19090, consumerId, timeout);
 
         while (!mode.equals("q")) {
             while (!(mode.equals("b") || mode.equals("r") || mode.equals("q"))) {
