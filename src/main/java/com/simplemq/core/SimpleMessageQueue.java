@@ -2,10 +2,8 @@ package com.simplemq.core;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.base.Strings;
+import com.google.common.collect.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +35,21 @@ public class SimpleMessageQueue {
     }
 
     public synchronized void enqueue(String topic, byte[] data) {
-        Preconditions.checkNotNull(topic, "topic cannot be null");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(topic), "topic cannot be null or empty");
         Preconditions.checkNotNull(data, "data cannot be null");
 
         if (expirationQueue.size() == maxMessages) {
             IndexedPair pair = expirationQueue.remove(expirationQueue.size() - 1);
             topicToData.remove(pair.key, pair.value);
+            for (String consumer : consumerToTopics.keySet()) {
+                Map<String, Integer> topicToIndices = consumerToTopics.get(consumer);
+                if (topicToIndices.containsKey(topic)) {
+                    int index = topicToIndices.get(topic);
+                    if (index > 0) {
+                        topicToIndices.put(topic, index - 1);
+                    }
+                }
+            }
         }
         topicToData.put(topic, data);
         IndexedPair pair = new IndexedPair();
@@ -52,6 +59,8 @@ public class SimpleMessageQueue {
     }
 
     public synchronized Optional<byte[]> dequeue(String consumerId, String topic) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(consumerId), "consumerId cannot be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(topic), "topic cannot be null or empty");
         Optional<byte[]> result = Optional.absent();
         Map<String, Integer> topicToIndex = new HashMap<String, Integer>();
         int nextIndex = 0;
@@ -77,6 +86,8 @@ public class SimpleMessageQueue {
     }
 
     public synchronized void resetTopic(String consumerId, String topic) {
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(consumerId), "consumerId cannot be null or empty");
+        Preconditions.checkArgument(!Strings.isNullOrEmpty(topic), "topic cannot be null or empty");
         if (consumerToTopics.containsKey(consumerId)) {
             Map<String, Integer> topicToIndex = consumerToTopics.get(consumerId);
             if (topicToIndex.containsKey(topic)) {
