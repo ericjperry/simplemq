@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,7 @@ public class SimpleMessageQueue {
 
     private ListMultimap<String, byte[]> topicToData;
     private Map<String, Map<String, Integer>> consumerToTopics;
-    private List<IndexedPair> expirationQueue;
+    private List<Pair<String, byte[]>> expirationQueue;
     private int maxMessages;
 
     public SimpleMessageQueue() {
@@ -39,8 +40,8 @@ public class SimpleMessageQueue {
         Preconditions.checkNotNull(data, "data cannot be null");
 
         if (expirationQueue.size() == maxMessages) {
-            IndexedPair pair = expirationQueue.remove(expirationQueue.size() - 1);
-            topicToData.remove(pair.key, pair.value);
+            Pair<String, byte[]> pair = expirationQueue.remove(expirationQueue.size() - 1);
+            topicToData.remove(pair.getValue0(), pair.getValue1());
             for (String consumer : consumerToTopics.keySet()) {
                 Map<String, Integer> topicToIndices = consumerToTopics.get(consumer);
                 if (topicToIndices.containsKey(topic)) {
@@ -52,9 +53,7 @@ public class SimpleMessageQueue {
             }
         }
         topicToData.put(topic, data);
-        IndexedPair pair = new IndexedPair();
-        pair.key = topic;
-        pair.value = data;
+        Pair<String, byte[]> pair = new Pair<String, byte[]>(topic, data);
         expirationQueue.add(0, pair);
     }
 
@@ -94,10 +93,5 @@ public class SimpleMessageQueue {
                 topicToIndex.remove(topic);
             }
         }
-    }
-
-    private static class IndexedPair {
-        public String key;
-        public byte[] value;
     }
 }
