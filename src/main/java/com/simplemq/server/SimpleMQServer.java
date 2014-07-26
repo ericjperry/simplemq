@@ -74,6 +74,10 @@ public class SimpleMQServer {
         server.serve();
     }
 
+    public void stop() {
+        server.stop();
+    }
+
     public static void main(String[] args) throws TTransportException {
         if (args.length == 1) {
             System.out.println("Starting the LocalMQ Server...");
