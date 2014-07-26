@@ -11,10 +11,14 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 
 public class SimpleMQServer {
+    private static Logger logger = LoggerFactory.getLogger(SimpleMQServer.class);
+    private TServer server;
 
     protected static class LocalMQHandler implements SimpleMQ.Iface {
         private SimpleMessageQueue mq;
@@ -50,16 +54,45 @@ public class SimpleMQServer {
 
     }
 
+    public SimpleMQServer(int port) {
+        LocalMQHandler handler = new LocalMQHandler();
+        SimpleMQ.Processor processor = new SimpleMQ.Processor(handler);
+
+        TServerTransport serverTransport;
+        try {
+            serverTransport = new TServerSocket(port);
+        } catch (TTransportException e) {
+            throw new RuntimeException("Could not create server socket", e);
+        }
+        server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
+    }
+
+    public void start() {
+        server.serve();
+    }
+
+    public void stop() {
+        logger.info("Stopping the SimpleMQ server");
+        server.stop();
+    }
+
     public static void main(String[] args) throws TTransportException {
         if (args.length == 1) {
-            LocalMQHandler handler = new LocalMQHandler();
-            SimpleMQ.Processor processor = new SimpleMQ.Processor(handler);
-
-            TServerTransport serverTransport = new TServerSocket(Integer.parseInt(args[0]));
-            TServer server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
-
             System.out.println("Starting the LocalMQ Server...");
-            server.serve();
+
+            final SimpleMQServer mqServer;
+            try {
+                mqServer = new SimpleMQServer(Integer.parseInt(args[0]));
+            } catch (NumberFormatException e) {
+                throw new RuntimeException("Please provide an integer as a command line parameter to use as the server port", e);
+            }
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    mqServer.stop();
+                }
+            }));
+            mqServer.start();
         } else {
             System.out.println("Please provide a port for the LocalMQ Server.");
             System.out.println("    " + SimpleMQServer.class.getSimpleName() + " <port>");
