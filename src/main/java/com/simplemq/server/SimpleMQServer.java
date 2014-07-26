@@ -67,13 +67,11 @@ public class SimpleMQServer {
         server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
     }
 
+    /**
+     * This method does not return and relies on thread management by the consumer of this class.
+     */
     public void start() {
         server.serve();
-    }
-
-    public void stop() {
-        logger.info("Stopping the SimpleMQ server");
-        server.stop();
     }
 
     public static void main(String[] args) throws TTransportException {
@@ -86,12 +84,6 @@ public class SimpleMQServer {
             } catch (NumberFormatException e) {
                 throw new RuntimeException("Please provide an integer as a command line parameter to use as the server port", e);
             }
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    mqServer.stop();
-                }
-            }));
             mqServer.start();
         } else {
             System.out.println("Please provide a port for the LocalMQ Server.");
