@@ -15,23 +15,26 @@ import java.util.Map;
 public class SimpleMessageQueue {
     private static final Logger log = LoggerFactory.getLogger(SimpleMessageQueue.class);
     public static final String MAX_MESSAGE_PROP = "com.simplemq.core.maxMessages";
+    public static final String RETAIN_MESSAGE_PROP = "com.simplemq.core.retain";
 
     private ListMultimap<String, byte[]> topicToData;
     private Map<String, Map<String, Integer>> consumerToTopics;
     private List<Pair<String, byte[]>> expirationQueue;
-    private int maxMessages;
+    private long maxMessages;
+    private boolean retainMessages;
 
     public SimpleMessageQueue() {
         // If no max is given, then try the system property, with 10000 as the
         // default.
-        this(Integer.parseInt(System.getProperty(MAX_MESSAGE_PROP, "10000")));
+        this(Long.parseLong(System.getProperty(MAX_MESSAGE_PROP, "10000")), Boolean.parseBoolean(System.getProperty((RETAIN_MESSAGE_PROP), "true")));
     }
 
-    public SimpleMessageQueue(int maxMessages) {
+    public SimpleMessageQueue(long maxMessages, boolean retainMessages) {
         this.maxMessages = maxMessages;
         this.topicToData = ArrayListMultimap.create();
         this.consumerToTopics = Maps.newHashMap();
         this.expirationQueue = Lists.newLinkedList();
+        this.retainMessages = retainMessages;
         log.info("Message queue initialized with max size of {}", this.maxMessages);
     }
 
@@ -75,7 +78,7 @@ public class SimpleMessageQueue {
         if (topicToData.containsKey(topic)) {
             List<byte[]> dataQueue = topicToData.get(topic);
             if (dataQueue.size() > nextIndex) {
-                result = Optional.of(dataQueue.get(nextIndex++));
+                result = Optional.of(dataQueue.remove(nextIndex++));
             }
         }
         topicToIndex.put(topic, nextIndex);
